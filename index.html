@@ -260,11 +260,14 @@ details.logic .f { color: var(--muted); font-size: 12.5px; margin-top: 12px; }
     const val = sum(cc, o => o.valor), ceq = sum(cc, o => o.equivalente), crec = sum(cc, o => o.recibida);
     const ci = ceq ? val / ceq : null, cs = crec ? sum(cc, o => o.costo_sistema * o.recibida) / crec : null;
     const ps = sum(pc, o => o.pliegos_sap), pd = sum(pc, o => o.prinect_desv);
+    const sin = ops.filter(o => o.est_cantidad !== OK || o.est_costo !== OK || o.est_prinect !== OK);
     R = {
       ops,
       resumen: {
         ops_total: ops.length,
-        ops_sin_datos: ops.filter(o => o.est_cantidad !== OK || o.est_costo !== OK || o.est_prinect !== OK).length,
+        ops_sin_datos: sin.length,
+        sin_pliegos: sum(sin.filter(o => o.est_cantidad !== "Entrada en metros"), o => o.recibida),
+        sin_metros: sum(sin.filter(o => o.est_cantidad === "Entrada en metros"), o => o.recibida),
         cantidad: { ops: qc.length, estados: conteo(ops, "est_cantidad"), equivalente: eq, recibida: rec,
           desv_abs: qc.length ? rec - eq : null, desv_pct: eq ? (rec - eq) / eq * 100 : null,
           faltante: qc.filter(o => o.desv_abs < 0).length, sobrante: qc.filter(o => o.desv_abs >= 0).length },
@@ -298,6 +301,7 @@ details.logic .f { color: var(--muted); font-size: 12.5px; margin-top: 12px; }
           <a class="kpi" href="#prinect"><div class="l">Prinect vs. SAP</div><div class="v">${pct(p.desv_pct)}</div>
             <div class="h">${sgn(p.desv_abs, f0)} pliegos en ${f0(p.ops)} OP con datos</div><div class="go">Ver SAP vs. Prinect →</div></a>
           <a class="kpi" href="#sindatos"><div class="l">OP con algún dato faltante</div><div class="v">${f0(s.ops_sin_datos)}</div>
+            <div class="h">${f0(s.sin_pliegos)} pliegos recibidos en estas OP${s.sin_metros ? ` (más ${f0(s.sin_metros)} m de entradas en metros)` : ""}</div>
             <div class="h">de ${f0(s.ops_total)} OP · ${esc(mesLabel().toLowerCase())}</div><div class="go">Ver OP sin datos →</div></a>
         </div>
       </section>
