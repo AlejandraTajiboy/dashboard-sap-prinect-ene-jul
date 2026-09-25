@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAP Prinect Ene–Jul</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f6f6f3;
+  --surface: #ffffff;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #ecebe6;
+  --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.08);
+  --s1: #2a78d6;   /* debajo de la referencia */
+  --s2: #eb6834;   /* arriba de la referencia */
+  --hover: rgba(11,11,11,0.035);
+  --sel: rgba(42,120,214,0.10);
+  --accent: #0b0b0b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2a2a28; --axis: #383835; --border: rgba(255,255,255,0.09);
+    --s1: #3987e5; --s2: #d95926; --hover: rgba(255,255,255,0.05); --sel: rgba(57,135,229,0.18); --accent: #ffffff;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2a2a28; --axis: #383835; --border: rgba(255,255,255,0.09);
+  --s1: #3987e5; --s2: #d95926; --hover: rgba(255,255,255,0.05); --sel: rgba(57,135,229,0.18); --accent: #ffffff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 1200px; margin: 0 auto; padding: 28px 20px 64px; }
+header h1 { font-size: 22px; font-weight: 650; margin: 0 0 4px; letter-spacing: -0.01em; }
+header .meta { color: var(--muted); font-size: 12.5px; margin: 0; }
+
+/* Navegación */
+nav.tabs {
+  position: sticky; top: 0; z-index: 10; display: flex; gap: 10px; align-items: center;
+  margin: 18px -20px 8px; padding: 10px 20px; background: color-mix(in srgb, var(--page) 92%, transparent);
+  backdrop-filter: blur(6px); border-bottom: 1px solid var(--border);
+}
+nav.tabs .links { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+nav.tabs .links::-webkit-scrollbar { display: none; }
+nav.tabs .mes { flex: none; display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 13px; }
+nav.tabs .mes select { background: var(--surface); font-weight: 600; }
+nav.tabs a {
+  flex: none; color: var(--ink-2); text-decoration: none; border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 14px; font-size: 13px; background: var(--surface); transition: background .15s, color .15s;
+}
+nav.tabs a:hover { color: var(--ink); background: var(--hover); }
+nav.tabs a.on { background: var(--accent); color: var(--page); border-color: var(--accent); }
+
+section { scroll-margin-top: 64px; margin-top: 40px; }
+section > h2 { font-size: 18px; font-weight: 650; margin: 0 0 2px; letter-spacing: -0.01em; }
+section > .lead { color: var(--ink-2); margin: 0 0 14px; max-width: 760px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; min-width: 0; }
+.stack > * + * { margin-top: 16px; }
+
+/* Resumen */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { display: block; text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; transition: background .15s; min-width: 0; }
+.kpi:hover { background: var(--hover); }
+.kpi .l { color: var(--ink-2); font-size: 13px; }
+.kpi .v { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+.kpi .h { color: var(--muted); font-size: 12.5px; }
+.kpi .go { color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+/* Cifras de cada sección */
+.figs { display: flex; flex-wrap: wrap; gap: 8px 32px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--grid); }
+.fig .l { color: var(--muted); font-size: 12px; }
+.fig .v { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fig.main .v { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; }
+
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.head h3 { font-size: 14px; font-weight: 600; margin: 0; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--ink-2); font-size: 12.5px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex: none; }
+
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .bar { cursor: pointer; }
+.chart text { font-family: inherit; }
+.tip {
+  position: absolute; pointer-events: none; z-index: 5; min-width: 200px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--border);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.14); border-radius: 10px; padding: 10px 12px; font-size: 12.5px;
+}
+.tip .t { font-weight: 600; margin-bottom: 6px; }
+.tip .r { display: flex; justify-content: space-between; gap: 14px; color: var(--ink-2); }
+.tip .r b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.note { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 22px 0 10px; }
+.controls .grow { flex: 1; }
+input[type=search], select, button {
+  font: inherit; font-size: 13px; color: var(--ink); background: var(--page); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 10px; min-width: 0;
+}
+input[type=search] { width: 240px; max-width: 100%; }
+button { cursor: pointer; }
+button:hover { background: var(--hover); }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--sel); border-radius: 999px; padding: 4px 6px 4px 10px; font-size: 12.5px; }
+.chip button { border: 0; background: transparent; padding: 0 4px; line-height: 1; }
+.count { color: var(--muted); font-size: 12.5px; }
+
+.table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 10px; max-height: 480px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { position: sticky; top: 0; background: var(--surface); color: var(--ink-2); font-weight: 600; font-size: 12px; user-select: none; z-index: 1; border-bottom-color: var(--axis); }
+th[data-k] { cursor: pointer; }
+th[data-k]:hover { color: var(--ink); }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+th .arr { color: var(--muted); font-size: 10px; margin-left: 3px; }
+.two td.desc { max-width: 170px; }
+td.desc { max-width: 230px; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
+tbody tr:hover { background: var(--hover); }
+tbody tr:last-child td { border-bottom: 0; }
+tfoot td { position: sticky; bottom: 0; background: var(--surface); font-weight: 600; border-top: 1px solid var(--axis); border-bottom: 0; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.muted { color: var(--muted); }
+.empty { color: var(--muted); padding: 18px; text-align: center; }
+.err { padding: 40px; text-align: center; color: var(--ink-2); }
+
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.two > * { min-width: 0; }
+details.logic summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+details.logic summary::-webkit-details-marker { display: none; }
+details.logic summary::after { content: "Mostrar"; color: var(--muted); font-weight: 400; font-size: 13px; }
+details.logic[open] summary::after { content: "Ocultar"; }
+details.logic ol { margin: 14px 0 0; padding-left: 20px; color: var(--ink-2); }
+details.logic li { margin: 8px 0; }
+details.logic .f { color: var(--muted); font-size: 12.5px; margin-top: 12px; }
+
+@media (max-width: 900px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .two { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .wrap { padding: 20px 16px 48px; }
+  nav.tabs { margin: 14px -16px 4px; padding: 10px 16px; flex-wrap: wrap; }
+  nav.tabs .links { flex-basis: 100%; order: 2; }
+  nav.tabs .mes { order: 1; width: 100%; }
+  nav.tabs .mes select { flex: 1; }
+  .card { padding: 16px; }
+  .kpi { padding: 14px; }
+  .kpi .v { font-size: 24px; }
+  .figs { gap: 8px 22px; }
+  header h1 { font-size: 19px; }
+  input[type=search] { width: 100%; }
+  .controls .grow { display: none; }
+}
+.est { display: inline-block; font-size: 11.5px; color: var(--ink-2); background: var(--hover); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; }
+.est.ok { color: var(--muted); background: transparent; border-color: transparent; padding-left: 0; }
+.fig.link { cursor: pointer; }
+.fig.link .v { text-decoration: underline dotted var(--muted); text-underline-offset: 4px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 7px 11px; background: var(--page); }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button.on { background: var(--accent); color: var(--page); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Dosificación SAP + Prinect · enero–julio 2026</h1>
+    <p class="meta" id="meta">Cargando…</p>
+  </header>
+  <nav class="tabs" id="nav">
+    <div class="links">
+      <a href="#resumen">Resumen</a>
+      <a href="#cantidad">Cantidades</a>
+      <a href="#costo">Costos</a>
+      <a href="#prinect">SAP vs. Prinect</a>
+      <a href="#sindatos">OP sin datos</a>
+      <a href="#logica">Revisión de la lógica</a>
+    </div>
+    <label class="mes"><span>Mes</span><select id="mes" aria-label="Filtrar por mes"></select></label>
+  </nav>
+  <div id="app"><div class="err">Cargando datos…</div></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s, el = document) => el.querySelector(s);
+  const nf0 = new Intl.NumberFormat("es-GT", { maximumFractionDigits: 0 });
+  const nf2 = new Intl.NumberFormat("es-GT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const nf4 = new Intl.NumberFormat("es-GT", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  const f0 = v => v == null ? "—" : nf0.format(v);
+  const f2 = v => v == null ? "—" : nf2.format(v);
+  const f4 = v => v == null ? "—" : nf4.format(v);
+  const sgn = (v, f) => v == null ? "—" : (v > 0 ? "+" : v < 0 ? "−" : "") + f(Math.abs(v));
+  const pct = v => v == null ? "—" : sgn(v, x => nf2.format(x)) + "%";
+  const money = v => v == null ? "—" : "Q" + nf2.format(v);
+  const cost = v => v == null ? "—" : "Q" + nf4.format(v);
+  const fecha = s => { if (!s) return "—"; const [y, m, d] = s.split("-"); return `${d}/${m}/${y}`; };
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const sum = (rows, f) => rows.reduce((a, o) => a + (f(o) || 0), 0);
+  const dot = neg => `<i class="dot" style="background:${neg ? "var(--s1)" : "var(--s2)"}"></i>`;
+  const fig = (l, v, main, attrs = "") => `<div class="fig${main ? " main" : ""}${attrs ? " link" : ""}" ${attrs}><div class="l">${l}</div><div class="v">${v}</div></div>`;
+  const OK = "Con datos";
+  const est = v => `<span class="est${v === OK ? " ok" : ""}">${esc(v)}</span>`;
+
+  let DATA, R, MES = "p";
+  fetch("data.json?v=" + Date.now())
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => { DATA = d; initMes(); render(); })
+    .catch(e => { $("#app").innerHTML = `<div class="err">No se pudieron cargar los datos (data.json). ${esc(e.message)}</div>`; });
+
+  const sinDatos = (estados) => Object.entries(estados).filter(([k]) => k !== OK).reduce((a, [, n]) => a + n, 0);
+  const detalle = (estados) => Object.entries(estados).filter(([k]) => k !== OK).map(([k, n]) => `${f0(n)} ${k.toLowerCase()}`).join(" · ");
+
+  // ---------------------------------------------------------------- filtro por mes
+  const enPeriodo = o => DATA.meses.some(m => m.periodo && m.mes === o.mes);
+  const OPS = () => DATA.ops.filter(o => MES === "p" ? enPeriodo(o) : MES === "fuera" ? !enPeriodo(o) : o.mes === +MES);
+  const fuera = () => DATA.meses.filter(m => !m.periodo);
+  function mesLabel() {
+    if (MES === "p") return DATA.titulo_periodo[0].toUpperCase() + DATA.titulo_periodo.slice(1);
+    if (MES === "fuera") return `Fuera del periodo (${fuera().map(m => m.nombre.toLowerCase()).join(", ") || "sin fecha"})`;
+    return `${DATA.meses.find(m => m.mes === +MES).nombre} ${DATA.titulo_periodo.slice(-4)}`;
+  }
+  function initMes() {
+    const sel = $("#mes"), nP = DATA.ops.filter(enPeriodo).length, nF = DATA.ops.length - nP;
+    sel.innerHTML = `<option value="p">${esc(mesLabel())} (${f0(nP)} OP)</option>`
+      + DATA.meses.filter(m => m.periodo).map(m => `<option value="${m.mes}">${esc(m.nombre)} (${f0(m.ops)})</option>`).join("")
+      + (nF ? `<option value="fuera">Fuera del periodo: ${esc(fuera().map(m => m.nombre.toLowerCase()).join(", ") || "sin fecha")} (${f0(nF)})</option>` : "");
+    sel.addEventListener("change", () => { MES = sel.value; const y = window.scrollY; render(); window.scrollTo(0, y); });
+    let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => SECTIONS.forEach(x => x.drawChart()), 120); });
+    watchNav();
+  }
+
+  function rangos(list, kR, kS, kA, kB) {
+    return DATA.rangos.map(rg => {
+      const sel = list.filter(o => o[kR] === rg);
+      return { rango: rg, total: sel.length, faltante: sel.filter(o => o[kS] < 0).length, sobrante: sel.filter(o => o[kS] >= 0).length, a: sum(sel, o => o[kA]), b: sum(sel, o => o[kB]) };
+    });
+  }
+  function conteo(list, k) {
+    const c = {};
+    list.forEach(o => { c[o[k]] = (c[o[k]] || 0) + 1; });
+    return Object.fromEntries(Object.entries(c).sort((a, b) => (a[0] !== OK) - (b[0] !== OK) || b[1] - a[1]));
+  }
+  // Totales de cada sección: solo OP «Con datos» del mes elegido
+  function calc() {
+    const ops = OPS();
+    const qc = ops.filter(o => o.est_cantidad === OK), cc = ops.filter(o => o.est_costo === OK), pc = ops.filter(o => o.est_prinect === OK);
+    const eq = sum(qc, o => o.equivalente), rec = sum(qc, o => o.recibida);
+    const val = sum(cc, o => o.valor), ceq = sum(cc, o => o.equivalente), crec = sum(cc, o => o.recibida);
+    const ci = ceq ? val / ceq : null, cs = crec ? sum(cc, o => o.costo_sistema * o.recibida) / crec : null;
+    const ps = sum(pc, o => o.pliegos_sap), pd = sum(pc, o => o.prinect_desv);
+    R = {
+      ops,
+      resumen: {
+        ops_total: ops.length,
+        ops_sin_datos: ops.filter(o => o.est_cantidad !== OK || o.est_costo !== OK || o.est_prinect !== OK).length,
+        cantidad: { ops: qc.length, estados: conteo(ops, "est_cantidad"), equivalente: eq, recibida: rec,
+          desv_abs: qc.length ? rec - eq : null, desv_pct: eq ? (rec - eq) / eq * 100 : null,
+          faltante: qc.filter(o => o.desv_abs < 0).length, sobrante: qc.filter(o => o.desv_abs >= 0).length },
+        costo: { ops: cc.length, estados: conteo(ops, "est_costo"), valor: val, costo_ideal: ci, costo_sistema: cs,
+          costo_var: ci != null && cs != null ? cs - ci : null, costo_pct: ci ? (cs - ci) / ci * 100 : null },
+        prinect: { ops: pc.length, estados: conteo(ops, "est_prinect"), pliegos_sap: ps, pliegos_prinect: ps + pd,
+          desv_abs: pc.length ? pd : null, desv_pct: ps ? pd / ps * 100 : null },
+      },
+      rangos: rangos(qc, "rango", "desv_abs", "equivalente", "recibida"),
+      rangos_costo: rangos(cc, "costo_rango", "costo_var", "costo_ideal", "costo_sistema"),
+      rangos_prinect: rangos(pc, "prinect_rango", "prinect_pct", "pliegos_sap", "pliegos_prinect"),
+    };
+  }
+
+  // ---------------------------------------------------------------- página
+  function render() {
+    calc();
+    const s = R.resumen, q = s.cantidad, c = s.costo, p = s.prinect, v = DATA.validacion;
+    const rangoFechas = MES === "p" ? ` (${fecha(DATA.periodo.desde)} al ${fecha(DATA.periodo.hasta)})` : "";
+    $("#meta").textContent = `Mostrando: ${mesLabel()}${rangoFechas} · Fuente: ${DATA.archivo}, hoja «${DATA.hoja_base}» · Actualizado ${DATA.generado}`;
+
+    const sinFig = (id, estados) => fig("Sin datos", `${f0(sinDatos(estados))} OP`, false, `data-sin="${id}" title="${esc(detalle(estados))}"`);
+
+    $("#app").innerHTML = `
+      <section id="resumen" style="margin-top:12px">
+        <div class="kpis">
+          <a class="kpi" href="#cantidad"><div class="l">Desviación de cantidad</div><div class="v">${pct(q.desv_pct)}</div>
+            <div class="h">${sgn(q.desv_abs, f0)} pliegos en ${f0(q.ops)} OP con datos</div><div class="go">Ver cantidades →</div></a>
+          <a class="kpi" href="#costo"><div class="l">Variación de costo unitario</div><div class="v">${pct(c.costo_pct)}</div>
+            <div class="h">${sgn(c.costo_var, cost)} por pliego en ${f0(c.ops)} OP</div><div class="go">Ver costos →</div></a>
+          <a class="kpi" href="#prinect"><div class="l">Prinect vs. SAP</div><div class="v">${pct(p.desv_pct)}</div>
+            <div class="h">${sgn(p.desv_abs, f0)} pliegos en ${f0(p.ops)} OP con datos</div><div class="go">Ver SAP vs. Prinect →</div></a>
+          <a class="kpi" href="#sindatos"><div class="l">OP con algún dato faltante</div><div class="v">${f0(s.ops_sin_datos)}</div>
+            <div class="h">de ${f0(s.ops_total)} OP · ${esc(mesLabel().toLowerCase())}</div><div class="go">Ver OP sin datos →</div></a>
+        </div>
+      </section>
+
+      <section id="cantidad">
+        <h2>Cantidades: equivalente vs. recibida</h2>
+        <p class="lead">Columnas «Cantidad equivalente», «cantidad real recibida», «DESVIACION ABSOLUTA» y «DESVIACION %» de la hoja.</p>
+        <div class="card">
+          <div class="figs">
+            ${fig("Desviación", pct(q.desv_pct), true)}
+            ${fig("Equivalente", f0(q.equivalente))}
+            ${fig("Recibida", f0(q.recibida))}
+            ${fig("Diferencia", sgn(q.desv_abs, f0))}
+            ${fig("Faltante / sobrante", `${f0(q.faltante)} / ${f0(q.sobrante)} OP`)}
+            ${sinFig("cantidad", q.estados)}
+          </div>
+          <div id="sec-cantidad"></div>
+        </div>
+      </section>
+
+      <section id="costo">
+        <h2>Costos: costo unidad ideal vs. costo unidad sistema</h2>
+        <p class="lead">Columnas «Valor Monetario», «Costo Unidad Ideal», «Costo unidad Sistema», «VARIACION» y «VARIACION %» de la hoja.</p>
+        <div class="card">
+          <div class="figs">
+            ${fig("Variación", pct(c.costo_pct), true)}
+            ${fig("Valor monetario", money(c.valor))}
+            ${fig("Costo ideal (prom.)", cost(c.costo_ideal))}
+            ${fig("Costo sistema (prom.)", cost(c.costo_sistema))}
+            ${fig("Variación absoluta", sgn(c.costo_var, cost))}
+            ${sinFig("costo", c.estados)}
+          </div>
+          <div id="sec-costo"></div>
+        </div>
+      </section>
+
+      <section id="prinect">
+        <h2>Pliegos de prensa: SAP vs. Prinect</h2>
+        <p class="lead">Columnas «DESVIACION PRINECT/SAP» y «DESVIACION % PRINECT/SAP» de la hoja. Pliegos SAP y Prinect tomados de «general» («PLIEGOS PRENSA SAP» y «PLIEGOS PRENSA PRINECT», que usa TOTAL CICLOS de Prinect).</p>
+        <div class="card">
+          <div class="figs">
+            ${fig("Desviación", pct(p.desv_pct), true)}
+            ${fig("Pliegos SAP", f0(p.pliegos_sap))}
+            ${fig("Pliegos Prinect", f0(p.pliegos_prinect))}
+            ${fig("Diferencia", sgn(p.desv_abs, f0))}
+            ${sinFig("prinect", p.estados)}
+          </div>
+          <div id="sec-prinect"></div>
+        </div>
+      </section>
+
+      <section id="sindatos">
+        <h2>OP sin datos</h2>
+        <p class="lead">OP de la hoja que no se pueden comparar en al menos una sección. El estado dice qué falta en cada una.</p>
+        <div class="card"><div id="sec-sindatos"></div></div>
+      </section>
+
+      <section id="logica">
+        <div class="card">
+          <details class="logic">
+            <summary>Revisión de la lógica del archivo · ${DATA.notas.length} observaciones</summary>
+            <p class="count" style="margin-top:10px">Los valores del dashboard son los de la hoja «${DATA.hoja_base}». Validación: se recalculó el equivalente y la cantidad recibida desde «general» en ${f0(v.ops_revisadas)} OP con datos (todo el archivo), ${f0(v.ops_con_diferencia)} con diferencias${v.ops_diferencia.length ? ": " + esc(v.ops_diferencia.join(", ")) : ""}. Estas observaciones son de todo el archivo; no cambian con el filtro de mes.</p>
+            <ol>${DATA.notas.map(n => `<li>${esc(n)}</li>`).join("")}</ol>
+            <p class="f">Los totales, gráficas y tablas usan el mes elegido arriba. Los totales de cada sección usan solo las OP «Con datos». Costo ideal y sistema promedio: ponderados por cantidad equivalente y recibida. Rangos por valor absoluto: 0–10%, 11–20%, … 91–100% y más de 100%.</p>
+          </details>
+        </div>
+      </section>
+    `;
+
+    SECTIONS.forEach(x => x.mount());
+    mountSinDatos();
+    document.querySelectorAll("[data-sin]").forEach(f => f.addEventListener("click", () => {
+      const sec = SECTIONS.find(x => x.id === f.dataset.sin);
+      sec.setEstado("__sin");
+      $("#sec-" + sec.id + " .controls").scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+  }
+
+  function watchNav() {
+    const links = [...document.querySelectorAll("#nav a")];
+    const byId = Object.fromEntries(links.map(a => [a.getAttribute("href").slice(1), a]));
+    const update = () => {
+      const secs = [...document.querySelectorAll("section[id]")];
+      if (!secs.length) return;
+      let cur = secs[0].id;
+      secs.forEach(s => { if (s.getBoundingClientRect().top - 90 <= 0) cur = s.id; });
+      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) cur = secs[secs.length - 1].id;
+      links.forEach(a => a.classList.toggle("on", a === byId[cur]));
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+  }
+
+  // ---------------------------------------------------------------- tabla ordenable
+  function table(el, cols, list, sort, foot, redraw) {
+    const col = cols.find(c => c.key === sort.key);
+    const get = o => col.val ? col.val(o) : o[col.key];
+    list.sort((a, b) => {
+      const x = get(a), y = get(b);
+      if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+      return (typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y), "es", { numeric: true })) * sort.dir;
+    });
+    const head = `<thead><tr>${cols.map(c => `<th class="${c.num ? "num" : ""}" data-k="${c.key}">${c.label}<span class="arr">${c.key === sort.key ? (sort.dir > 0 ? "▲" : "▼") : ""}</span></th>`).join("")}</tr></thead>`;
+    const body = list.length
+      ? `<tbody>${list.map(o => `<tr>${cols.map(c => {
+          const raw = o[c.key];
+          return `<td class="${c.num ? "num" : ""} ${c.cls || ""}"${c.cls === "desc" ? ` title="${esc(raw)}"` : ""}>${c.fmt ? c.fmt(raw, o) : esc(raw ?? "—")}</td>`;
+        }).join("")}</tr>`).join("")}</tbody>`
+      : `<tbody><tr><td colspan="${cols.length}" class="empty">No hay OP con estos filtros.</td></tr></tbody>`;
+    el.innerHTML = head + body + (list.length && foot ? foot(list) : "");
+    el.querySelectorAll("th[data-k]").forEach(th => th.addEventListener("click", () => {
+      const k = th.dataset.k;
+      sort.dir = sort.key === k ? -sort.dir : (cols.find(c => c.key === k).num ? -1 : 1);
+      sort.key = k;
+      redraw();
+    }));
+  }
+
+  function csv(name, cols, rows) {
+    const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const lines = [cols.map(c => q(c.label)).join(",")].concat(rows.map(o => cols.map(c => q(o[c.key])).join(",")));
+    const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${name}_${MES === "p" ? "ene-jul" : MES === "fuera" ? "fuera_periodo" : "mes" + String(MES).padStart(2, "0")}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // ---------------------------------------------------------------- sección: gráfica de rangos + filtros + tabla
+  function Section(cfg) {
+    const st = { rango: null, estado: OK, q: "", sort: { ...cfg.sort } };
+    const el = () => $("#sec-" + cfg.id);
+    const estados = () => R.resumen[cfg.id].estados;
+    const matchEstado = o => st.estado === "" || (st.estado === "__sin" ? o[cfg.estKey] !== OK : o[cfg.estKey] === st.estado);
+    const rows = () => R.ops
+      .filter(matchEstado)
+      .filter(o => !st.rango || o[cfg.rangeKey] === st.rango)
+      .filter(o => !st.q || `${o.op} ${o.articulo} ${o.descripcion} ${o.prinect_titulo || ""}`.toLowerCase().includes(st.q));
+
+    function mount() {
+      const e = estados(), nSin = sinDatos(e);
+      if (st.estado !== OK && st.estado !== "" && !(st.estado === "__sin" && nSin) && !e[st.estado]) st.estado = OK;
+      el().innerHTML = `
+        <div class="head"><h3>OP con datos por rango de ${cfg.what}</h3>
+          <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>${cfg.labels.neg}</span><span><i class="sw" style="background:var(--s2)"></i>${cfg.labels.pos}</span></div></div>
+        <div class="chart" data-c></div>
+        <div class="note" data-n></div>
+        <div class="controls">
+          <input type="search" data-q placeholder="Buscar OP, artículo o descripción…">
+          <select data-e aria-label="Estado de los datos">
+            <option value="${OK}">Con datos (${f0(e[OK] || 0)})</option>
+            ${nSin ? `<option value="__sin">Sin datos: todas (${f0(nSin)})</option>` : ""}
+            ${Object.entries(e).filter(([k]) => k !== OK).map(([k, n]) => `<option value="${esc(k)}">· ${esc(k)} (${f0(n)})</option>`).join("")}
+            <option value="">Todas las OP (${f0(R.resumen.ops_total)})</option>
+          </select>
+          <select data-r aria-label="Rango"><option value="">Todos los rangos</option>${cfg.rangos().map(x => `<option>${x.rango}</option>`).join("")}</select>
+          <span data-chip></span>
+          <span class="grow"></span>
+          <span class="count" data-cnt></span>
+          <button data-csv>Descargar CSV</button>
+        </div>
+        <div class="table-wrap"><table data-t></table></div>`;
+      const E = el();
+      $("[data-q]", E).addEventListener("input", ev => { st.q = ev.target.value.trim().toLowerCase(); drawTable(); });
+      $("[data-e]", E).addEventListener("change", ev => setEstado(ev.target.value));
+      $("[data-r]", E).addEventListener("change", ev => pick(ev.target.value || null, true));
+      $("[data-csv]", E).addEventListener("click", () => csv(cfg.csvName, cfg.cols, rows()));
+      $("[data-q]", E).value = st.q;
+      $("[data-e]", E).value = st.estado;
+      $("[data-r]", E).value = st.rango || "";
+      $("[data-r]", E).disabled = st.estado !== OK && st.estado !== "";
+      drawChart(); drawTable();
+    }
+    function setEstado(v) {
+      st.estado = v;
+      if (v !== OK) st.rango = null;
+      $("[data-e]", el()).value = v;
+      $("[data-r]", el()).value = st.rango || "";
+      $("[data-r]", el()).disabled = v !== OK && v !== "";
+      drawChart(); drawTable();
+    }
+    function pick(r, fromSelect) {
+      st.rango = fromSelect ? r : (st.rango === r ? null : r);
+      if (st.rango && st.estado !== OK) { st.estado = OK; $("[data-e]", el()).value = OK; $("[data-r]", el()).disabled = false; }
+      $("[data-r]", el()).value = st.rango || "";
+      drawChart(); drawTable();
+    }
+    function drawChart() {
+      const d = cfg.rangos(), tot = sum(d, x => x.total);
+      rangeChart($("[data-c]", el()), d, st.rango, cfg.labels, r => pick(r));
+      $("[data-n]", el()).textContent = tot === 0 ? "No hay OP con datos en este mes." : `${f0(tot)} OP con datos · ${f0(d[0].total)} (${nf2.format(tot ? d[0].total / tot * 100 : 0)}%) en 0–10% · ${f0(d[d.length - 1].total)} en más de 100%. Haz clic en una barra para filtrar la tabla.`;
+    }
+    function drawTable() {
+      const list = rows();
+      table($("[data-t]", el()), cfg.cols, list, st.sort, l => cfg.foot(l.filter(o => o[cfg.estKey] === OK), l.length), drawTable);
+      $("[data-cnt]", el()).textContent = `${f0(list.length)} OP`;
+      const chip = $("[data-chip]", el());
+      chip.innerHTML = st.rango ? `<span class="chip">Rango ${esc(st.rango)}<button aria-label="Quitar filtro">✕</button></span>` : "";
+      const b = $("button", chip);
+      if (b) b.addEventListener("click", () => pick(null, true));
+    }
+    return { id: cfg.id, mount, drawChart, setEstado };
+  }
+
+  // ---------------------------------------------------------------- gráfica de rangos
+  function rangeChart(box, data, selected, labels, onPick) {
+    const W = Math.max(300, box.clientWidth), narrow = W < 560;
+    const H = narrow ? 260 : 300, m = { t: 22, r: 4, b: narrow ? 50 : 30, l: 36 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const max = Math.max(1, ...data.map(d => d.total));
+    const step = niceStep(max), top = Math.ceil(max / step) * step;
+    const y = v => m.t + ih - v / top * ih;
+    const band = iw / data.length, bw = Math.min(narrow ? 20 : 34, band * 0.6), gap = 2, rad = 4;
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(labels.aria)}">`;
+    for (let v = 0; v <= top; v += step) {
+      s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? "var(--axis)" : "var(--grid)"}"/>`;
+      s += `<text x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" style="font-variant-numeric:tabular-nums">${f0(v)}</text>`;
+    }
+    data.forEach((d, i) => {
+      const cx = m.l + band * i + band / 2, x = cx - bw / 2;
+      const dim = selected && selected !== d.rango, op = dim ? 0.25 : 1;
+      if (selected === d.rango) s += `<rect x="${m.l + band * i + 2}" y="${m.t - 6}" width="${band - 4}" height="${ih + 6}" rx="6" fill="var(--sel)"/>`;
+      const segs = [{ v: d.faltante, c: "var(--s1)" }, { v: d.sobrante, c: "var(--s2)" }].filter(z => z.v > 0);
+      let base = 0;
+      segs.forEach((z, k) => {
+        const y0 = y(base), y1 = y(base + z.v), h = Math.max(0, y0 - y1 - (k > 0 ? gap : 0));
+        s += k === segs.length - 1 ? bar(x, y1, bw, h, rad, z.c, op) : `<rect x="${x}" y="${y1}" width="${bw}" height="${h}" fill="${z.c}" opacity="${op}"/>`;
+        base += z.v;
+      });
+      if (d.total > 0) s += `<text x="${cx}" y="${y(d.total) - 6}" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)" opacity="${dim ? 0.4 : 1}">${f0(d.total)}</text>`;
+      s += narrow
+        ? `<text transform="translate(${cx},${H - m.b + 12}) rotate(-45)" text-anchor="end" font-size="10.5" fill="var(--ink-2)">${d.rango}</text>`
+        : `<text x="${cx}" y="${H - m.b + 18}" text-anchor="middle" font-size="11.5" fill="var(--ink-2)">${d.rango}</text>`;
+      s += `<rect class="bar" data-i="${i}" x="${m.l + band * i}" y="${m.t}" width="${band}" height="${ih + m.b}" fill="transparent"/>`;
+    });
+    box.innerHTML = s + `</svg><div class="tip" hidden></div>`;
+    const tip = $(".tip", box);
+    box.querySelectorAll(".bar").forEach(b => {
+      b.addEventListener("mousemove", ev => {
+        const d = data[+b.dataset.i];
+        tip.innerHTML = `<div class="t">Rango ${d.rango}</div>
+          <div class="r"><span><i class="sw" style="background:var(--s1)"></i> ${labels.neg}</span><b>${f0(d.faltante)} OP</b></div>
+          <div class="r"><span><i class="sw" style="background:var(--s2)"></i> ${labels.pos}</span><b>${f0(d.sobrante)} OP</b></div>
+          <div class="r"><span>Total</span><b>${f0(d.total)} OP</b></div>
+          ${labels.tip ? labels.tip(d) : ""}`;
+        tip.hidden = false;
+        const rect = box.getBoundingClientRect();
+        let lx = ev.clientX - rect.left + 14;
+        if (lx + tip.offsetWidth > rect.width) lx = ev.clientX - rect.left - tip.offsetWidth - 14;
+        tip.style.left = Math.max(0, lx) + "px"; tip.style.top = Math.max(0, ev.clientY - rect.top - 10) + "px";
+      });
+      b.addEventListener("mouseleave", () => { tip.hidden = true; });
+      b.addEventListener("click", () => onPick(data[+b.dataset.i].rango));
+    });
+  }
+  function bar(x, y, w, h, r, fill, op) {
+    r = Math.min(r, h, w / 2);
+    return `<path d="M${x},${y + h} V${y + r} Q${x},${y} ${x + r},${y} H${x + w - r} Q${x + w},${y} ${x + w},${y + r} V${y + h} Z" fill="${fill}" opacity="${op}"/>`;
+  }
+  function niceStep(max) {
+    const raw = max / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+  }
+  const tipAB = (la, lb, fmt, diff) => d => `<div class="r" style="margin-top:6px"><span>${la}</span><b>${fmt(d.a)}</b></div><div class="r"><span>${lb}</span><b>${fmt(d.b)}</b></div>${diff ? `<div class="r"><span>Diferencia</span><b>${sgn(d.b - d.a, fmt)}</b></div>` : ""}`;
+  const totLabel = (n, all) => `Total con datos · ${f0(n)} OP${all > n ? ` <span class="muted" style="font-weight:400">(${f0(all - n)} sin datos no suman)</span>` : ""}`;
+
+  // ---------------------------------------------------------------- configuración de las 3 secciones
+  const OP = { key: "op", label: "OP" }, FECHA = { key: "fecha", label: "Fecha", fmt: fecha }, ART = { key: "articulo", label: "ID artículo" };
+  const DESC = { key: "descripcion", label: "Descripción", cls: "desc", fmt: v => v ? esc(v) : "—" };
+  const SECTIONS = [
+    Section({
+      id: "cantidad", estKey: "est_cantidad", rangeKey: "rango", what: "desviación porcentual", csvName: "desviacion_cantidad",
+      rangos: () => R.rangos,
+      sort: { key: "desv_pct", dir: -1 },
+      labels: { aria: "OP por rango de desviación de cantidad", neg: "Faltante (recibida < equivalente)", pos: "Sobrante (recibida ≥ equivalente)",
+        tip: tipAB("Equivalente", "Recibida", f0, true) },
+      cols: [OP, FECHA, ART, DESC,
+        { key: "equivalente", label: "Cant. equivalente", num: true, fmt: f2 },
+        { key: "recibida", label: "Cant. recibida", num: true, fmt: f0 },
+        { key: "desv_abs", label: "Desv. absoluta", num: true, fmt: v => sgn(v, f2) },
+        { key: "desv_pct", label: "Desv. %", num: true, val: o => o.desv_pct == null ? null : Math.abs(o.desv_pct), fmt: (v, o) => v == null ? "—" : dot(o.desv_abs < 0) + pct(v) },
+        { key: "est_cantidad", label: "Estado", fmt: est }],
+      foot: (l, all) => {
+        const e = sum(l, o => o.equivalente), r = sum(l, o => o.recibida);
+        return `<tfoot><tr><td colspan="4">${totLabel(l.length, all)}</td><td class="num">${f2(e)}</td><td class="num">${f0(r)}</td><td class="num">${l.length ? sgn(r - e, f2) : "—"}</td><td class="num">${e ? pct((r - e) / e * 100) : "—"}</td><td></td></tr></tfoot>`;
+      },
+    }),
+    Section({
+      id: "costo", estKey: "est_costo", rangeKey: "costo_rango", what: "variación porcentual de costo", csvName: "variacion_costo",
+      rangos: () => R.rangos_costo,
+      sort: { key: "costo_pct", dir: -1 },
+      labels: { aria: "OP por rango de variación de costo unitario", neg: "Costo sistema menor que ideal", pos: "Costo sistema mayor o igual que ideal",
+        tip: d => `<div class="r" style="margin-top:6px"><span>Costo ideal (prom.)</span><b>${cost(d.total ? d.a / d.total : null)}</b></div><div class="r"><span>Costo sistema (prom.)</span><b>${cost(d.total ? d.b / d.total : null)}</b></div>` },
+      cols: [OP, FECHA, ART, DESC,
+        { key: "valor", label: "Valor monetario", num: true, fmt: money },
+        { key: "costo_ideal", label: "Costo ideal", num: true, fmt: cost },
+        { key: "costo_sistema", label: "Costo sistema", num: true, fmt: cost },
+        { key: "costo_var", label: "Var. absoluta", num: true, fmt: v => sgn(v, cost) },
+        { key: "costo_pct", label: "Var. %", num: true, val: o => o.costo_pct == null ? null : Math.abs(o.costo_pct), fmt: (v, o) => v == null ? "—" : dot(o.costo_var < 0) + pct(v) },
+        { key: "est_costo", label: "Estado", fmt: est }],
+      foot: (l, all) => {
+        const val = sum(l, o => o.valor), eq = sum(l, o => o.equivalente), rec = sum(l, o => o.recibida);
+        const ci = eq ? val / eq : null, cs = rec ? sum(l, o => o.costo_sistema * o.recibida) / rec : null;
+        return `<tfoot><tr><td colspan="4">${totLabel(l.length, all)}</td><td class="num">${money(val)}</td><td class="num">${cost(ci)}</td><td class="num">${cost(cs)}</td><td class="num">${ci ? sgn(cs - ci, cost) : "—"}</td><td class="num">${ci ? pct((cs - ci) / ci * 100) : "—"}</td><td></td></tr></tfoot>`;
+      },
+    }),
+    Section({
+      id: "prinect", estKey: "est_prinect", rangeKey: "prinect_rango", what: "desviación SAP vs. Prinect", csvName: "sap_vs_prinect",
+      rangos: () => R.rangos_prinect,
+      sort: { key: "prinect_pct", dir: -1 },
+      labels: { aria: "OP por rango de desviación SAP contra Prinect", neg: "Prinect menor que SAP", pos: "Prinect mayor o igual que SAP",
+        tip: tipAB("Pliegos SAP", "Pliegos Prinect", f0, true) },
+      cols: [OP, FECHA,
+        { key: "prinect_titulo", label: "Trabajo (Prinect)", cls: "desc", fmt: v => v ? esc(v) : "—" },
+        { key: "cortes", label: "Cortes", num: true, fmt: f0 },
+        { key: "pliegos_sap", label: "Pliegos SAP", num: true, fmt: f0 },
+        { key: "pliegos_prinect", label: "Pliegos Prinect", num: true, fmt: f0 },
+        { key: "prinect_desv", label: "Desv. absoluta", num: true, fmt: v => sgn(v, f0) },
+        { key: "prinect_pct", label: "Desv. %", num: true, val: o => o.prinect_pct == null ? null : Math.abs(o.prinect_pct), fmt: (v, o) => v == null ? "—" : dot(o.prinect_pct < 0) + pct(v) },
+        { key: "est_prinect", label: "Estado", fmt: est }],
+      foot: (l, all) => {
+        const s = sum(l, o => o.pliegos_sap), d = sum(l, o => o.prinect_desv);
+        return `<tfoot><tr><td colspan="4">${totLabel(l.length, all)}</td><td class="num">${f0(s)}</td><td class="num">${f0(s + d)}</td><td class="num">${l.length ? sgn(d, f0) : "—"}</td><td class="num">${s ? pct(d / s * 100) : "—"}</td><td></td></tr></tfoot>`;
+      },
+    }),
+  ];
+
+  // ---------------------------------------------------------------- OP sin datos (vista conjunta)
+  function mountSinDatos() {
+    const all = R.ops.filter(o => o.est_cantidad !== OK || o.est_costo !== OK || o.est_prinect !== OK);
+    const st = { f: "", sort: { key: "op", dir: 1 } };
+    const n = k => all.filter(o => o[k] !== OK).length;
+    const opts = [["", `Todas (${f0(all.length)})`], ["est_cantidad", `Cantidades (${f0(n("est_cantidad"))})`], ["est_costo", `Costos (${f0(n("est_costo"))})`], ["est_prinect", `SAP vs. Prinect (${f0(n("est_prinect"))})`]];
+    const cols = [OP, FECHA, ART, DESC,
+      { key: "recibida", label: "Cant. recibida", num: true, fmt: f0 },
+      { key: "valor", label: "Valor monetario", num: true, fmt: money },
+      { key: "est_cantidad", label: "Cantidades", fmt: est },
+      { key: "est_costo", label: "Costos", fmt: est },
+      { key: "est_prinect", label: "SAP vs. Prinect", fmt: est }];
+    const E = $("#sec-sindatos");
+    E.innerHTML = `<div class="controls" style="margin-top:0"><div class="seg">${opts.map(([k, l]) => `<button data-f="${k}">${l}</button>`).join("")}</div>
+      <span class="grow"></span><span class="count" data-cnt></span><button data-csv>Descargar CSV</button></div>
+      <div class="table-wrap"><table data-t></table></div>`;
+    const rows = () => all.filter(o => !st.f || o[st.f] !== OK);
+    const draw = () => {
+      E.querySelectorAll("[data-f]").forEach(b => b.classList.toggle("on", b.dataset.f === st.f));
+      const l = rows();
+      table($("[data-t]", E), cols, l, st.sort, null, draw);
+      $("[data-cnt]", E).textContent = `${f0(l.length)} OP`;
+    };
+    E.querySelectorAll("[data-f]").forEach(b => b.addEventListener("click", () => { st.f = b.dataset.f; draw(); }));
+    $("[data-csv]", E).addEventListener("click", () => csv("op_sin_datos", cols, rows()));
+    draw();
+  }
+})();
+</script>
+</body>
+</html>
